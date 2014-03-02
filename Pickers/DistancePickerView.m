@@ -117,31 +117,26 @@
             label.text = text;
             label.font = labelfont;
             label.backgroundColor = [UIColor clearColor];
-            label.shadowColor = [UIColor whiteColor];
-            label.shadowOffset = CGSizeMake(0,1);
+            
+            /*
+             * iOS7以上と、それ以下で処理を分岐
+             * iOS7以前のUIで、選択部分に半透明のプレートの向こう側にラベルを配置する処理で落ちていたので
+             * その処理を消して、
+             *     iOS7以上 -> そのままラベルを表示
+             *     それ以外 -> 半透明プレートの向こうにラベルがあるように見せるために、フォントの透過度を調整
+             * とした。他の部分は、従来のライブラリのロジックを利用。
+             */
+            
+            NSArray  *aOsVersions = [[[UIDevice currentDevice]systemVersion] componentsSeparatedByString:@"."];
+            NSInteger iOsVersionMajor  = [[aOsVersions objectAtIndex:0] intValue];
+            if (iOsVersionMajor < 7) {
+                label.alpha = 0.5;
+            }
             
             // Tag cannot be 0 so just increment component number to esnure we get a positive
             // NB update/remove Label methods are aware of this incrementation!
             label.tag = component + 1;
-            
-            if(addlabelView) {
-                /* 
-                 and now for the tricky bit: adding the label to the view.
-                 kind of a hack to be honest, might stop working if Apple decides to 
-                 change the inner workings of the UIPickerView.
-                 */     
-                if (self.showsSelectionIndicator) { 
-                    // if this is the last wheel, add label as the third view from the top
-                    if (component==self.numberOfComponents-1) 
-                        [self insertSubview:label atIndex:[self.subviews count]-3];
-                    // otherwise add label as the 5th, 10th, 15th etc view from the top
-                    else
-                        [self insertSubview:label aboveSubview:[self.subviews objectAtIndex:5*(component+1)]];
-                } else
-                    // there is no selection indicator, so just add it to the top
-                    [self addSubview:label];
-                
-            }
+            [self addSubview:label];
             
             if ([self.delegate respondsToSelector:@selector(pickerView:didSelectRow:inComponent:)])
                 [self.delegate pickerView:self didSelectRow:[self selectedRowInComponent:component] inComponent:component];
