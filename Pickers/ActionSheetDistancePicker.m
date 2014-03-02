@@ -141,8 +141,25 @@
     return 10;
 }
 
-- (NSString *)pickerView:(UIPickerView *)pickerView titleForRow:(NSInteger)row forComponent:(NSInteger)component {
-     return [NSString stringWithFormat:@"%i", row];
+/*
+ * UIPickerView のリールの中のフォントと位置を調整したかったので、
+ * titleForRow から viewForRow に変更して、リールの中身を View にした。
+ */
+- (UIView *)pickerView:(UIPickerView *)pickerView viewForRow:(NSInteger)row forComponent:(NSInteger)component reusingView:(UIView*)view{
+    UILabel *label = (id)view;
+    UIFont *labelfont = [UIFont boldSystemFontOfSize:20];
+    if (!label) {
+        label= [[UILabel alloc] initWithFrame:CGRectMake(0.0f, 0.0f, [pickerView rowSizeForComponent:component].width, [pickerView rowSizeForComponent:component].height)];
+        label.backgroundColor = [UIColor clearColor];
+        label.textAlignment = UITextAlignmentLeft;
+        label.font = labelfont;
+    }
+    
+    // Ugh: UILabel の文字が Picker で見ると左寄りになってしまったので、
+    // 半角スペースで調整した。
+    label.text = [NSString stringWithFormat:@"  %i", row];
+    
+    return label;
 }
 
 - (CGFloat)pickerView:(UIPickerView *)pickerView widthForComponent:(NSInteger)component {
